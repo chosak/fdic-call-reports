@@ -80,11 +80,13 @@ LOGGING = {
     },
 }
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': [
-            'cache.kez3tf.cfg.use1.cache.amazonaws.com:11211',
-        ]
+memcached_server = os.environ.get('MEMCACHED_SERVER')
+if memcached_server:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+            'LOCATION': [
+                memcached_server,
+            ]
+        } 
     }
-}
