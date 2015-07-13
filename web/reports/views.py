@@ -1,87 +1,44 @@
-from datetime import date
-from django.core.cache import cache
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.shortcuts import render
-from django.views.generic import View
+from django.http import Http404
+from django.views.generic import ListView
 
-from reports.dynamo import DynamoTable
+from reports.models import Report
+from reports.util import IndexableQuery
 
 
 
-class IndexView(View):
-    def __init__(self):
-        self.cache = cache
+class IndexView(ListView):
+    template_name = 'index.html'
+    context_object_name = 'banks'
+    paginate_by = 100
 
 
-    def get(self, request):
-        page = request.GET.get('page')
-        banks, page_number, has_previous, has_next = self.banks_for_page(page)
-
-        context = {
-            'banks': banks,
-            'page': page_number,
-            'has_previous': has_previous,
-            'has_next': has_next,
-        }
-
-        return render(request, 'index.html', context)
+    def __init__(self, *args, **kwargs):
+        super(IndexView, self).__init__(*args, **kwargs)
+        self.num_banks = Report.objects.num_banks()
 
 
-    def banks_for_page(self, page):
-        cache_key = self.cache_key(page)
-
-        bank_data = self.cache.get(cache_key)
-        if bank_data is not None:
-            return bank_data
-
-        paginator = Paginator(self.get_banks(), 25)
-        try:
-            banks = paginator.page(page)
-        except PageNotAnInteger:
-            banks = paginator.page(1)
-        except EmptyPage:
-            banks = paginator.page(paginator.num_pages)
-    
-        bank_data = (
-            banks.object_list,
-            banks.number,
-            banks.has_previous(),
-            banks.has_next()
-        )
-        self.cache.set(cache_key, bank_data, timeout=None)
-        return bank_data
+    def get_queryset(self):
+        return IndexableQuery(self.num_banks, Report.objects.most_recent)
 
 
-    def cache_key(self, page):
-        try:
-            page = int(page)
-        except (TypeError, ValueError):
-            page = 1
-
-        return 'banks-{}'.format(page)
+    def get_context_data(self, **kwargs):
+        context = super(IndexView, self).get_context_data(**kwargs)
+        context['num_banks'] = self.num_banks
+        return context
 
 
-    def get_banks(self):
-        table = DynamoTable('banks')
-        results = table.get_table().scan()
 
-        return [self.bank_from_row(row) for row in results]
-
-
-    def bank_from_row(self, row):
-        return {
-            'idrssd': row['idrssd'],
-            'name': row['name'],
-            'address': row['address'],
-            'city': row['city'],
-            'state': row['state'],
-            'zip': row['zip'],
-            'last_report': self.last_report(row['report_date']),
-        } 
+class BankView(ListView):
+    template_name = 'bank.html'
+    context_object_name = 'reports'
 
 
-    def last_report(self, mmddyyyy):
-        y = int(mmddyyyy[4:])
-        m = int(mmddyyyy[:2])
-        d = int(mmddyyyy[2:4])
-        return date(y, m, d).isoformat()
+    def get_queryset(self):
+        qs = Report.objects \
+            .filter(idrssd=self.kwargs['idrssd']) \
+            .order_by('-date')
+
+        if not qs.exists():
+            raise Http404
+
+        return list(qs)

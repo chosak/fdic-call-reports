@@ -1,47 +1,92 @@
 {% extends 'base.html' %}
+
+
 {% block title %}FDIC Call Report Browser{% endblock %}
+
+
+{% block head %}
+<style type="text/css">
+h1 a, h1 a:hover, h1 a:active, h1 a:focus {
+    color: #777;
+    text-decoration: none;
+}
+</style>
+{% endblock %}
+
+
 {% block body %}
 <div class="container">
-<div class="row">
-  <div class="col-md-8">
-    <h1>FDIC Call Report Browser</h3>
-  </div>
-</div>
-<div class="row">
-<div class="col-md-8">
-{% if has_previous %}<a href="{% url 'index' %}?page={{ page|add:"-1" }}">previous</a>{% endif %}
-{% if has_next %}<a href="{% url 'index' %}?page={{ page|add:"1"  }}">next</a>{% endif %}
-</div>
-</div>
-<div class="row">
-<div class="col-md-8">
-<table class="table table-hover">
-  <thead>
-    <tr>
-      <th>IDRSSD</th>
-      <th>Name</th>
-      <th>Address</th>
-      <th>City</th>
-      <th>State</th>
-      <th>Zip Code</th>
-      <th>Last Report</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for bank in banks %}
-    <tr>
-      <td>{{ bank.idrssd }}</td>
-      <td>{{ bank.name }}</td>
-      <td>{{ bank.address }}</td>
-      <td>{{ bank.city }}</td>
-      <td>{{ bank.state }}</td>
-      <td>{{ bank.zip }}</td>
-      <td>{{ bank.last_report }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-</div>
-</div>
+    <div class="row">
+        <div class="col-md-8">
+            <h1><a href="{% url 'index' %}">FDIC Call Report Browser</a></h1>
+            <h4>{{ num_banks }} banks</h4>
+        </div>
+    </div>
+    {% if is_paginated %}
+    <div class="row">
+        <div class="col-md-8">
+            <div class="pagination">
+                <span class="page-links">
+                    {% if page_obj.has_previous %}
+                    <a href="{% url 'index' %}?page={{ page_obj.previous_page_number }}"
+                    ><i class="ion-arrow-left-a"></i></a>
+                    {% endif %}
+                    <span class="page-current">
+                        page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                    {% if page_obj.has_next %}
+                    <a href="{% url 'index' %}?page={{ page_obj.next_page_number }}"
+                    ><i class="ion-arrow-right-a"></i></a>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="row">
+        <div class="col-md-8">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>IDRSSD</th>
+                        <th>Name</th>
+                        <th>Last Report</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bank in banks %}
+                    <tr>
+                        <td><a href="{% url 'bank' bank.idrssd %}">
+                            {{ bank.idrssd }}
+                        </a></td>
+                        <td>{{ bank.name }}</td>
+                        <td>{{ bank.date }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% if is_paginated %}
+    <div class="row">
+        <div class="col-md-8">
+            <div class="pagination">
+                <span class="page-links">
+                    {% if page_obj.has_previous %}
+                    <a href="{% url 'index' %}?page={{ page_obj.previous_page_number }}"
+                    ><i class="ion-arrow-left-a"></i></a>
+                    {% endif %}
+                    <span class="page-current">
+                        page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                    {% if page_obj.has_next %}
+                    <a href="{% url 'index' %}?page={{ page_obj.next_page_number }}"
+                    ><i class="ion-arrow-right-a"></i></a>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

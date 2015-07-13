@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load filters %}
+
+
+{% block title %}FDIC Call Report Browser{% endblock %}
+
+
+{% block head %}
+<style type="text/css">
+h1 a, h1 a:hover, h1 a:active, h1 a:focus {
+    color: #777;
+    text-decoration: none;
+}
+</style>
+{% endblock %}
+
+
+{% block body %}
+{% with reports|last as last_report %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <h1><a href="{% url 'index' %}">FDIC Call Report Browser</a></h1>
+            <h2>{{ last_report.name }}</h2>
+            <p>{{ last_report.address.strip }}, {{ last_report.city.strip }}, {{ last_report.state.strip }} {{ last_report.zipcode }}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-8">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Report Date</th>
+                        <th>Assets</th>
+                        <th>Deposits</th>
+                        <th>Liabilities</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td>{{ report.date }}</td>
+                        <td>{{ report.assets|money:1000 }}M</td>
+                        <td>{{ report.deposits|money:1000 }}M</td>
+                        <td>{{ report.liabilities|money:1000 }}M</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endwith %}
+{% endblock %}
