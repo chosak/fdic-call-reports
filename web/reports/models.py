@@ -9,6 +9,7 @@ class ReportManager(models.Manager):
         inner_query = '''
 SELECT
     idrssd,
+    name,
     max(date) max_date
 FROM
     reports_report
@@ -34,6 +35,8 @@ INNER JOIN (
 ON
     r1.idrssd = r2.idrssd AND
     r1.date = r2.max_date
+ORDER BY
+    r2.name ASC
         '''.strip().format(
             inner_query=inner_query
         )
