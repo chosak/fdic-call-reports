@@ -54,7 +54,7 @@ The Django web application allows for browsing of all data generated in previous
 
 The home page shows a list of all banks over all time, alphabetized by name.
 
-![index](http://i.imgur.com/oLS2Rhll.png)
+![index](http://i.imgur.com/b8Oira5l.png)
 
 Each bank's ID links to a page displaying the details of its balance sheet over time.
 
