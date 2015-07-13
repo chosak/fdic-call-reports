@@ -25,7 +25,16 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'reports.urls'
 WSGI_APPLICATION = 'wsgi.application'
 
-DATABASES = {}
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql', 
+        'NAME': 'django',
+        'HOST': os.environ['DJANGO_RDS_HOST'],
+        'USER': os.environ['DJANGO_RDS_USER'],
+        'PASSWORD': os.environ['DJANGO_RDS_PASSWORD'],
+        'PORT': 3306,
+    },  
+}
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
