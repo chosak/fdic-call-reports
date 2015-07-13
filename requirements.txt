@@ -1,6 +1,7 @@
 Django==1.7
 awscli==1.4.4
 boto==2.32.1
+mrjob==0.4.4
 python-memcached==1.53
 selenium==2.43.0
 wsgiref==0.1.2
