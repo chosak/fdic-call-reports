@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.common.by import By
 
 
 logging.basicConfig(level=logging.INFO)
@@ -25,21 +26,18 @@ def run():
     Uses a web browser to download all available FDIC call report data from the
     URL defined as DOWNLOADS_PAGE above.
 
-    Uses Selenium which must be running using, e.g.
+    Uses Selenium which must be running using Selenium Server (Grid), e.g.
 
-        java -jar selenium-server-standalone-2.43.1.jar
+       java -jar selenium-server-4.6.0.jar standalone --port 4444
 
     By default the script tries to connect to a server running locally on
     port 4444, but this may be overridden through use of the SELENIUM_SERVER
     environment variable.
 
     The standalone Selenium server tries to use the default system browser.
-    To use a different browser like Chrome, add this command-line option to
-    the java call:
-
-        -Dwebdriver.chrome.driver=/path/to/chromedriver
-
-    Also set the SELENIUM_BROWSER environment variable to CHROME.
+    To use a different browser like Chrome, set the SELENIUM_BROWSER environment 
+    variable to CHROME. You may also need to download a specific driver from selenium 
+    (older versions especially), but they seem to be trying to automate this.
 
     This program triggers downloads in tab-delimited format which get
     saved to the default browser download location.
@@ -52,12 +50,13 @@ def run():
             driver.get('https://cdr.ffiec.gov/public/PWS/DownloadBulkData.aspx')
 
             logger.info('setting download type to single period')
-            dl_type = Select(driver.find_element_by_id('ListBox1'))
+            dl_type = Select(driver.find_element(By.ID,"ListBox1"))
             dl_type.select_by_value('ReportingSeriesSinglePeriod')
+            logger.info("Selected ListBox1 - Reporting Series Single Period")
             time.sleep(3)
 
             logger.info('finding available reporting periods')
-            periods = Select(driver.find_element_by_id('DatesDropDownList'))
+            periods = Select(driver.find_element(By.ID,'DatesDropDownList'))
 
             if not count:
                 logger.info('{} available reporting periods: {}'.format(
@@ -74,7 +73,7 @@ def run():
             periods.select_by_index(count)
             time.sleep(3)
 
-            submit_button = driver.find_element_by_id('Download_0')
+            submit_button = driver.find_element(By.ID,'Download_0')
             submit_button.click()
             time.sleep(3)
 
@@ -93,7 +92,7 @@ def selenium_driver():
 
     driver = webdriver.Remote(
         SELENIUM_SERVER,
-        desired_capabilities=capabilities
+        options=webdriver.ChromeOptions()
     )
 
     try:
